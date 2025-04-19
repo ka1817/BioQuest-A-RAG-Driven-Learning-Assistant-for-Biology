@@ -1,1 +1,1 @@
-Bio-RAG
+BioQuest: A RAG-Driven Learning Assistant for Biology
