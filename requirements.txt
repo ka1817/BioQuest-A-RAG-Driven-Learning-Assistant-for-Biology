@@ -1,6 +1,6 @@
 langchain 
-langchain_groq 
-langchain_huggingface 
+langchain-groq 
+langchain-huggingface 
 langchain_community 
 python-dotenv 
 pypdf 
