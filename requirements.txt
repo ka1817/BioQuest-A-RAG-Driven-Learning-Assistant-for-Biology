@@ -1,14 +1,10 @@
 langchain 
 langchain-groq 
 langchain-huggingface 
-langchain_community 
 python-dotenv 
 pypdf 
 faiss-cpu 
-rank_bm25 
 fastapi 
 uvicorn
 pydantic 
 streamlit 
-pytest 
-httpx
