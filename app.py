@@ -10,7 +10,7 @@ with st.form("chat_form", clear_on_submit=True):
     question = st.text_input("Ask your question:", placeholder="e.g. What is the function of mitochondria?")
     submitted = st.form_submit_button("Ask")
 
-API_URL = "http://localhost:2000/predict"  
+API_URL = "http://backend:2000/predict"  
 
 if submitted and question:
     with st.spinner("Thinking..."):
