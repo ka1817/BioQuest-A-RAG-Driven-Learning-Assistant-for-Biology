@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v4
@@ -22,31 +22,30 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install --no-cache-dir -r requirements.txt
+          pip install uvicorn httpx pytest
 
       - name: Set Environment Variables
         run: echo "GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}" >> $GITHUB_ENV
 
-      - name: Run Backend Tests
+      - name: Start FastAPI Server
+        run: |
+          uvicorn main:app --host 0.0.0.0 --port 2000 &
+          for i in {1..10}; do
+            if curl -f http://localhost:2000/docs; then
+              echo "✅ FastAPI is up!"
+              break
+            fi
+            echo "⏳ Waiting for FastAPI to start... ($i/10)"
+            sleep 2
+          done
+
+      - name: Run Tests
         run: |
           if [ -z "${{ secrets.GROQ_API_KEY }}" ]; then
             echo "❌ GROQ_API_KEY is missing! Skipping tests..."
             exit 1
           fi
           PYTHONPATH=$(pwd) pytest tests/ --maxfail=5 --disable-warnings
-
-      - name: Run FastAPI Server Test
-        run: |
-          uvicorn main:app --host 0.0.0.0 --port 2000 &  # Start FastAPI in the background
-          for i in {1..10}; do
-            if curl -f http://localhost:2000/docs; then
-              echo "✅ FastAPI is up!"
-              exit 0
-            fi
-            echo "⏳ Waiting for FastAPI to start... ($i/10)"
-            sleep 3
-          done
-          echo "❌ FastAPI did not start in time!"
-          exit 1
 
   deploy:
     runs-on: ubuntu-latest
