@@ -1,6 +1,7 @@
 langchain 
 langchain-groq 
 langchain-huggingface 
+langchain-community
 python-dotenv 
 pypdf 
 faiss-cpu 
