@@ -27,8 +27,12 @@ jobs:
     - name: Run FastAPI in background
       run: |
         uvicorn main:app --host 0.0.0.0 --port 2000 &
-        echo "Waiting for server..."
-        sleep 5
+        echo "Waiting for server to be available..."
+        # Wait for the backend service to be available on port 2000
+        while ! nc -z localhost 2000; do
+          sleep 1
+        done
+        echo "Backend is ready!"
 
     - name: Run tests against FastAPI
       run: |
@@ -65,12 +69,15 @@ jobs:
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_PRIVATE_KEY }}
         script: |
+          # Clean up old containers, volumes, and unused resources
           docker-compose down --volumes --remove-orphans || true
           docker system prune -af || true
 
+          # Pull the latest images
           docker pull ${{ secrets.DOCKER_USERNAME }}/biorag-backend:latest
           docker pull ${{ secrets.DOCKER_USERNAME }}/biorag-frontend:latest
 
+          # Create a fresh docker-compose.yml with the latest images
           cat > docker-compose.yml <<EOF
           version: '3.8'
 
@@ -92,4 +99,5 @@ jobs:
               restart: always
           EOF
 
+          # Start the containers with the latest images
           docker-compose up -d
