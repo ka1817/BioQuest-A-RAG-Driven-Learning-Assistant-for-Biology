@@ -21,7 +21,7 @@ from langchain.memory import ConversationBufferWindowMemory
 from langchain.prompts import ChatPromptTemplate
 from langchain_groq import ChatGroq
 
-loader = DirectoryLoader('Data/', glob="**/*.pdf", show_progress=True, loader_cls=PyPDFLoader)
+loader = DirectoryLoader('data/', glob="**/*.pdf", show_progress=True, loader_cls=PyPDFLoader)
 documents = loader.load()
 
 splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=100)
