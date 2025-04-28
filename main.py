@@ -9,11 +9,10 @@ load_dotenv()
 
 app = FastAPI(title="A RAG-Driven Learning Assistant for Biology")
 
-
-from langchain.document_loaders import DirectoryLoader, PyPDFLoader
+from langchain_community.document_loaders import DirectoryLoader, PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.vectorstores import FAISS
+from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
 from langchain.schema import Document, BaseRetriever
 from sentence_transformers import CrossEncoder
 from langchain.chains import ConversationalRetrievalChain
@@ -31,16 +30,19 @@ embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-
 vectorstore = FAISS.from_documents(chunks, embeddings)
 
 GROQ_API_KEY = os.getenv('GROQ_API_KEY')
+if not GROQ_API_KEY:
+    raise ValueError("GROQ_API_KEY is not set in the environment variables")
+    
 llm = ChatGroq(api_key=GROQ_API_KEY, model='llama-3.3-70b-versatile')
 
 prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a helpful and knowledgeable biology tutor. Answer clearly and accurately. If the query is out of syllabus, just respond with 'Out of syllabus'."),
+    ("system", "You are a helpful and knowledgeable biology tutor. Answer clearly and accurately. If the query is out of syllabus, just respond with 'Out of syllabus'."), 
     ("human", "Context:\n{context}\n\nQuestion: {question}")
 ])
 
 memory = ConversationBufferWindowMemory(
-    memory_key="chat_history",
-    return_messages=True,
+    memory_key="chat_history", 
+    return_messages=True, 
     k=3
 )
 
@@ -72,15 +74,13 @@ qa_chain = ConversationalRetrievalChain.from_llm(
     combine_docs_chain_kwargs={"prompt": prompt}
 )
 
-
 class QuestionInput(BaseModel):
     question: str
 
 @app.post("/predict")
 def predict(input: QuestionInput):
-    result = qa_chain.invoke({"question": input.question})
+    result = qa_chain({"question": input.question})  
     return {"answer": result["answer"]}
-
 
 if __name__ == "__main__":
     uvicorn.run(app, host='0.0.0.0', port=2000)
